@@ -1,6 +1,535 @@
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Segoe UI,Tahoma,sans-serif;
+/* ==========================================
+   STUDENT ATTENDANCE MANAGEMENT SYSTEM
+   STYLE.CSS
+========================================== */
+
+
+/* ==========================================
+   RESET
+========================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
+
+
+/* ==========================================
+   BODY
+========================================== */
+
+body {
+    background: #f1f5f9;
+    color: #1e293b;
+    padding: 20px;
+    min-height: 100vh;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+
+/* ==========================================
+   DARK MODE
+========================================== */
+
+body.dark {
+    background: #0f172a;
+    color: #e2e8f0;
+}
+
+
+/* ==========================================
+   MAIN CONTAINER
+========================================== */
+
+.container {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    transition: background 0.3s ease;
+}
+
+
+.dark .container {
+    background: #1e293b;
+}
+
+
+/* ==========================================
+   HEADER
+========================================== */
+
+.header {
+    background: #1e293b;
+    color: white;
+    padding: 25px;
+    text-align: center;
+}
+
+
+.header h1 {
+    font-size: 25px;
+    font-weight: 700;
+    margin-bottom: 18px;
+}
+
+
+/* ==========================================
+   TOP BUTTONS
+========================================== */
+
+.top-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+
+button {
+    border: none;
+    border-radius: 8px;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.2s ease;
+}
+
+
+button:hover {
+    transform: translateY(-1px);
+    opacity: 0.9;
+}
+
+
+.dark-btn {
+    background: #475569;
+    color: white;
+}
+
+
+.dark-btn:hover {
+    background: #64748b;
+}
+
+
+/* ==========================================
+   CONTENT
+========================================== */
+
+.content {
+    padding: 25px;
+}
+
+
+/* ==========================================
+   STATISTICS
+========================================== */
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+
+.stat {
+    padding: 20px;
+    border-radius: 12px;
+    background: #f8fafc;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+    transition: 0.2s ease;
+}
+
+
+.stat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+
+.dark .stat {
+    background: #334155;
+    border-color: #475569;
+}
+
+
+.stat div {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+
+.stat h2 {
+    font-size: 30px;
+    margin-top: 8px;
+}
+
+
+/* ==========================================
+   FORM
+========================================== */
+
+.form-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 15px;
+    align-items: end;
+    margin-bottom: 20px;
+}
+
+
+.form-group label {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #334155;
+}
+
+
+.dark .form-group label {
+    color: #e2e8f0;
+}
+
+
+input,
+select {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    outline: none;
+    background: #ffffff;
+    color: #1e293b;
+    font-size: 14px;
+    transition: 0.2s ease;
+}
+
+
+input:focus,
+select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+
+.dark input,
+.dark select {
+    background: #0f172a;
+    color: white;
+    border-color: #475569;
+}
+
+
+.dark input::placeholder {
+    color: #94a3b8;
+}
+
+
+/* ==========================================
+   FORM BUTTONS
+========================================== */
+
+.button-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+
+.btn-add {
+    background: #16a34a;
+    color: white;
+}
+
+
+.btn-add:hover {
+    background: #15803d;
+}
+
+
+.btn-mark {
+    background: #2563eb;
+    color: white;
+}
+
+
+.btn-mark:hover {
+    background: #1d4ed8;
+}
+
+
+.btn-clear {
+    background: #64748b;
+    color: white;
+}
+
+
+.btn-clear:hover {
+    background: #475569;
+}
+
+
+/* ==========================================
+   SEARCH
+========================================== */
+
+.search-box {
+    margin: 20px 0;
+}
+
+
+.search-box input {
+    padding: 13px 15px;
+    font-size: 14px;
+}
+
+
+/* ==========================================
+   TABLE
+========================================== */
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 10px;
+}
+
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 700px;
+}
+
+
+th,
+td {
+    padding: 13px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 14px;
+}
+
+
+th {
+    background: #f8fafc;
+    color: #334155;
+    font-weight: 700;
+}
+
+
+.dark th {
+    background: #334155;
+    color: #f8fafc;
+}
+
+
+.dark td {
+    border-color: #475569;
+}
+
+
+tr:hover {
+    background: #f8fafc;
+}
+
+
+.dark tr:hover {
+    background: #273449;
+}
+
+
+/* ==========================================
+   STATUS
+========================================== */
+
+.status-present {
+    color: #16a34a;
+    font-weight: 700;
+}
+
+
+.status-absent {
+    color: #dc2626;
+    font-weight: 700;
+}
+
+
+/* ==========================================
+   ACTION BUTTONS
+========================================== */
+
+.btn-edit {
+    background: #f59e0b;
+    color: white;
+    padding: 7px 10px;
+    font-size: 12px;
+    margin-right: 5px;
+}
+
+
+.btn-edit:hover {
+    background: #d97706;
+}
+
+
+.btn-delete {
+    background: #dc2626;
+    color: white;
+    padding: 7px 10px;
+    font-size: 12px;
+}
+
+
+.btn-delete:hover {
+    background: #b91c1c;
+}
+
+
+/* ==========================================
+   EMPTY MESSAGE
+========================================== */
+
+.empty {
+    text-align: center;
+    padding: 35px;
+    color: #94a3b8;
+    font-size: 15px;
+}
+
+
+/* ==========================================
+   FOOTER
+========================================== */
+
+.footer {
+    text-align: center;
+    padding: 18px;
+    border-top: 1px solid #e2e8f0;
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+
+.dark .footer {
+    border-color: #475569;
+}
+
+
+/* ==========================================
+   MOBILE RESPONSIVE
+========================================== */
+
+@media (max-width: 900px) {
+
+    .form-section {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .button-group {
+        grid-column: 1 / -1;
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    body {
+        padding: 8px;
+    }
+
+
+    .container {
+        border-radius: 12px;
+    }
+
+
+    .header {
+        padding: 20px 15px;
+    }
+
+
+    .header h1 {
+        font-size: 21px;
+    }
+
+
+    .content {
+        padding: 15px;
+    }
+
+
+    .stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+
+    .stat {
+        padding: 15px 10px;
+    }
+
+
+    .stat h2 {
+        font-size: 24px;
+    }
+
+
+    .form-section {
+        grid-template-columns: 1fr;
+    }
+
+
+    .button-group {
+        grid-column: auto;
+        flex-direction: column;
+    }
+
+
+    .button-group button {
+        width: 100%;
+    }
+
+
+    .top-buttons {
+        flex-direction: column;
+    }
+
+
+    .top-buttons button {
+        width: 100%;
+        max-width: 250px;
+    }
+
+}
+
+
+@media (max-width: 400px) {
+
+    .stats {
+        grid-template-columns: 1fr;
+    }
+
+
+    .header h1 {
+        font-size: 19px;
+    }
+
+
+    .content {
+        padding: 12px;
+    }
+
+    }
