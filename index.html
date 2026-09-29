@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Student Attendance Management System</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Segoe UI,Tahoma,sans-serif;
+}
+
+body{
+    background:#f1f5f9;
+    padding:20px;
+    color:#1e293b;
+    transition:.3s;
+}
+
+body.dark{
+    background:#0f172a;
+    color:#e2e8f0;
+}
+
+.container{
+    max-width:1100px;
+    margin:auto;
+    background:white;
+    border-radius:16px;
+    overflow:hidden;
+    box-shadow:0 8px 30px rgba(0,0,0,.08);
+}
+
+.dark .container{
+    background:#1e293b;
+}
+
+.header{
+    background:#1e293b;
+    color:white;
+    padding:25px;
+    text-align:center;
+}
+
+.header h1{
+    margin-bottom:15px;
+}
+
+.top-buttons{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+button{
+    border:0;
+    border-radius:8px;
+    padding:10px 15px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.dark-btn{
+    background:#475569;
+    color:white;
+}
+
+.content{
+    padding:25px;
+}
+
+/* Statistics */
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:15px;
+    margin-bottom:25px;
+}
+
+.stat{
+    padding:20px;
+    border-radius:12px;
+    background:#f8fafc;
+    text-align:center;
+}
+
+.dark .stat{
+    background:#334155;
+}
+
+.stat h2{
+    font-size:28px;
+    margin-top:5px;
+}
+
+/* Form */
+
+.form-section{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr auto;
+    gap:15px;
+    align-items:end;
+    margin-bottom:20px;
+}
+
+.form-group label{
+    display:block;
+    margin-bottom:6px;
+    font-size:14px;
+    font-weight:600;
+}
+
+input,select{
+    width:100%;
+    padding:11px;
+    border:1px solid #cbd5e1;
+    border-radius:8px;
+    outline:none;
+}
+
+.dark input,
+.dark select{
+    background:#0f172a;
+    color:white;
+    border-color:#475569;
+}
+
+.btn-add{
+    background:#16a34a;
+    color:white;
+}
+
+.btn-mark{
+    background:#2563eb;
+    color:white;
+}
+
+.btn-clear{
+    background:#64748b;
+    color:white;
+}
+
+/* Search */
+
+.search-box{
+    margin:20px 0;
+}
+
+.search-box input{
+    padding:13px;
+}
+
+/* Table */
+
+.table-wrapper{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th,td{
+    padding:13px;
+    border-bottom:1px solid #e2e8f0;
+    text-align:left;
+}
+
+.dark th,
+.dark td{
+    border-color:#475569;
+}
+
+th{
+    background:#f8fafc;
+}
+
+.dark th{
+    background:#334155;
+}
+
+.status-present{
+    color:#16a34a;
+    font-weight:bold;
+}
+
+.status-absent{
+    color:#dc2626;
+    font-weight:bold;
+}
+
+.btn-edit{
+    background:#f59e0b;
+    color:white;
+}
+
+.btn-delete{
+    background:#dc2626;
+    color:white;
+    padding:7px 10px;
+}
+
+.empty{
+    text-align:center;
+    padding:30px;
+    color:#94a3b8;
+}
+
+.footer{
+    text-align:center;
+    padding:18px;
+    border-top:1px solid #e2e8f0;
+    color:#94a3b8;
+}
+
+/* Mobile */
+
+@media(max-width:800px){
+
+    .stats{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .form-section{
+        grid-template-columns:1fr;
+    }
+
+    .header h1{
+        font-size:21px;
+    }
+
+    body{
+        padding:8px;
+    }
+
+    .content{
+        padding:15px;
+    }
+
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+
+        <h1>📚 Student Attendance System</h1>
+
+        <div class="top-buttons">
+            <button class="dark-btn" onclick="toggleDarkMode()">
+                🌙 Dark Mode
+            </button>
+
+            <button class="dark-btn" onclick="exportCSV()">
+                📥 Export CSV
+            </button>
+        </div>
+
+    </div>
+
+    <div class="content">
+
+        <!-- Statistics -->
+
+        <div class="stats">
+
+            <div class="stat">
+                <div>👨‍🎓 Total Students</div>
+                <h2 id="totalStudents">0</h2>
+            </div>
+
+            <div class="stat">
+                <div>✅ Present</div>
+                <h2 id="presentCount">0</h2>
+            </div>
+
+            <div class="stat">
+                <div>❌ Absent</div>
+                <h2 id="absentCount">0</h2>
+            </div>
+
+            <div class="stat">
+                <div>📊 Attendance %</div>
+                <h2 id="attendancePercent">0%</h2>
+            </div>
+
+        </div>
+
+
+        <!-- Form -->
+
+        <div class="form-section">
+
+            <div class="form-group">
+                <label>Student ID</label>
+                <input
+                    type="text"
+                    id="studentId"
+                    placeholder="e.g. STU001">
+            </div>
+
+            <div class="form-group">
+                <label>Student Name</label>
+                <input
+                    type="text"
+                    id="studentName"
+                    placeholder="Full name">
+            </div>
+
+            <div class="form-group">
+                <label>Status</label>
+
+                <select id="status">
+                    <option value="Present">Present</option>
+                    <option value="Absent">Absent</option>
+                </select>
+
+            </div>
+
+            <div>
+
+                <button
+                    class="btn-add"
+                    onclick="addStudent()">
+                    ➕ Add
+                </button>
+
+                <button
+                    class="btn-mark"
+                    onclick="markAttendance()">
+                    ✔ Mark
+                </button>
+
+                <button
+                    class="btn-clear"
+                    onclick="clearFields()">
+                    Clear
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- Search -->
+
+        <div class="search-box">
+
+            <input
+                type="text"
+                id="search"
+                placeholder="🔎 Search by Student ID or Name..."
+                oninput="renderTable()">
+
+        </div>
+
+
+        <!-- Table -->
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+
+                </thead>
+
+                <tbody id="tableBody"></tbody>
+
+            </table>
+
+        </div>
+
+        <div
+            id="emptyMessage"
+            class="empty"
+            style="display:none">
+
+            No student records found.
+
+        </div>
+
+    </div>
+
+
+    <div class="footer">
+        Student Attendance Management System
+        • Data saved automatically in browser
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================
+   LOAD DATA
+========================= */
+
+let students =
+    JSON.parse(localStorage.getItem("attendanceData")) || [];
+
+let editIndex = -1;
+
+
+/* =========================
+   SAVE DATA
+========================= */
+
+function saveData(){
+
+    localStorage.setItem(
+        "attendanceData",
+        JSON.stringify(students)
+    );
+
+}
+
+
+/* =========================
+   RENDER TABLE
+========================= */
+
+function renderTable(){
+
+    const tbody =
+        document.getElementById("tableBody");
+
+    const empty =
+        document.getElementById("emptyMessage");
+
+    const search =
+        document.getElementById("search")
+        .value
+        .toLowerCase();
+
+    tbody.innerHTML = "";
+
+    const filtered =
+        students.filter(student =>
+            student.id.toLowerCase().includes(search) ||
+            student.name.toLowerCase().includes(search)
+        );
+
+
+    if(filtered.length === 0){
+
+        empty.style.display = "block";
+
+    }else{
+
+        empty.style.display = "none";
+
+    }
+
+
+    filtered.forEach(student => {
+
+        const realIndex =
+            students.indexOf(student);
+
+        const row =
+            document.createElement("tr");
+
+        row.innerHTML = `
+
+            <td>${student.id}</td>
+
+            <td>${student.name}</td>
+
+            <td>${student.date || "-"}</td>
+
+            <td class="${
+                student.status === "Present"
+                ? "status-present"
+                : student.status === "Absent"
+                ? "status-absent"
+                : ""
+            }">
+
+                ${student.status || "Not Marked"}
+
+            </td>
+
+            <td>
+
+                <button
+                    class="btn-edit"
+                    onclick="editStudent(${realIndex})">
+
+                    ✏ Edit
+
+                </button>
+
+                <button
+                    class="btn-delete"
+                    onclick="deleteStudent(${realIndex})">
+
+                    🗑 Delete
+
+                </button>
+
+            </td>
+        `;
+
+        tbody.appendChild(row);
+
+    });
+
+    updateStatistics();
+
+}
+
+
+/* =========================
+   ADD STUDENT
+========================= */
+
+function addStudent(){
+
+    const id =
+        document.getElementById("studentId")
+        .value.trim();
+
+    const name =
+        document.getElementById("studentName")
+        .value.trim();
+
+
+    if(!id || !name){
+
+        alert("Please enter Student ID and Name!");
+
+        return;
+
+    }
+
+
+    if(
+        students.some(
+            s => s.id.toLowerCase() === id.toLowerCase()
+        )
+    ){
+
+        alert("This Student ID already exists!");
+
+        return;
+
+    }
+
+
+    students.push({
+
+        id:id,
+        name:name,
+        date:"",
+        status:""
+
+    });
+
+
+    saveData();
+
+    renderTable();
+
+    clearFields();
+
+    alert("Student added successfully! 🎉");
+
+}
+
+
+/* =========================
+   MARK ATTENDANCE
+========================= */
+
+function markAttendance(){
+
+    const id =
+        document.getElementById("studentId")
+        .value.trim();
+
+    const status =
+        document.getElementById("status")
+        .value;
+
+
+    if(!id){
+
+        alert("Please enter Student ID!");
+
+        return;
+
+    }
+
+
+    const student =
+        students.find(
+            s => s.id.toLowerCase() === id.toLowerCase()
+        );
+
+
+    if(!student){
+
+        alert("Student ID not found!");
+
+        return;
+
+    }
+
+
+    const today =
+        new Date().toLocaleDateString();
+
+
+    student.date = today;
+
+    student.status = status;
+
+
+    saveData();
+
+    renderTable();
+
+
+    alert(
+        "Attendance marked as " +
+        status +
+        " successfully! ✅"
+    );
+
+}
+
+
+/* =========================
+   EDIT STUDENT
+========================= */
+
+function editStudent(index){
+
+    const student = students[index];
+
+    document.getElementById("studentId").value =
+        student.id;
+
+    document.getElementById("studentName").value =
+        student.name;
+
+    document.getElementById("status").value =
+        student.status || "Present";
+
+    editIndex = index;
+
+    alert("Student information loaded. Edit the fields and press Add.");
+
+}
+
+
+/* =========================
+   DELETE STUDENT
+========================= */
+
+function deleteStudent(index){
+
+    if(
+        confirm(
+            "Are you sure you want to delete this student?"
+        )
+    ){
+
+        students.splice(index,1);
+
+        saveData();
+
+        renderTable();
+
+    }
+
+}
+
+
+/* =========================
+   CLEAR
+========================= */
+
+function clearFields(){
+
+    document.getElementById("studentId").value = "";
+
+    document.getElementById("studentName").value = "";
+
+    document.getElementById("status").value = "Present";
+
+    editIndex = -1;
+
+}
+
+
+/* =========================
+   STATISTICS
+========================= */
+
+function updateStatistics(){
+
+    const total = students.length;
+
+    const present =
+        students.filter(
+            s => s.status === "Present"
+        ).length;
+
+    const absent =
+        students.filter(
+            s => s.status === "Absent"
+        ).length;
+
+
+    const marked = present + absent;
+
+
+    const percentage =
+        marked === 0
+        ? 0
+        : Math.round((present / marked) * 100);
+
+
+    document.getElementById(
+        "totalStudents"
+    ).textContent = total;
+
+
+    document.getElementById(
+        "presentCount"
+    ).textContent = present;
+
+
+    document.getElementById(
+        "absentCount"
+    ).textContent = absent;
+
+
+    document.getElementById(
+        "attendancePercent"
+    ).textContent =
+        percentage + "%";
+
+}
+
+
+/* =========================
+   DARK MODE
+========================= */
+
+function toggleDarkMode(){
+
+    document.body.classList.toggle("dark");
+
+    localStorage.setItem(
+        "darkMode",
+        document.body.classList.contains("dark")
+    );
+
+}
+
+
+if(
+    localStorage.getItem("darkMode") === "true"
+){
+
+    document.body.classList.add("dark");
+
+}
+
+
+/* =========================
+   EXPORT CSV
+========================= */
+
+function exportCSV(){
+
+    if(students.length === 0){
+
+        alert("There is no data to export!");
+
+        return;
+
+    }
+
+
+    let csv =
+        "Student ID,Name,Date,Status\n";
+
+
+    students.forEach(student => {
+
+        csv +=
+            `"${student.id}","${student.name}","${student.date}","${student.status}"\n`;
+
+    });
+
+
+    const blob =
+        new Blob([csv], {
+            type:"text/csv;charset=utf-8;"
+        });
+
+
+    const url =
+        URL.createObjectURL(blob);
+
+
+    const link =
+        document.createElement("a");
+
+
+    link.href = url;
+
+    link.download =
+        "student-attendance.csv";
+
+
+    link.click();
+
+    URL.revokeObjectURL(url);
+
+}
+
+
+/* =========================
+   START
+========================= */
+
+renderTable();
+
+</script>
+
+</body>
+</html>
