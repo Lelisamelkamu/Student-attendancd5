@@ -1,171 +1,191 @@
-const STORAGE_KEY = "attendanceRecords";
-let records = loadRecords();
-
-function loadRecords() {
-    try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    } catch (e) {
-        return [];
-    }
+:root {
+    --ink: #1c2b3a;
+    --paper: #f4f5f1;
+    --card: #ffffff;
+    --line: #d9dcd3;
+    --accent: #2f5d50;
+    --accent-dark: #234539;
+    --present: #16a34a;
+    --absent: #dc2626;
+    --muted: #6b7280;
 }
 
-function saveRecords() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.5;
+    padding: 24px 12px;
 }
 
-function today() {
-    // Local date as YYYY-MM-DD
-    const d = new Date();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${d.getFullYear()}-${m}-${day}`;
+.container {
+    max-width: 960px;
+    margin: 0 auto;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
 }
 
-function escapeHtml(str) {
-    const div = document.createElement("div");
-    div.textContent = str;
-    return div.innerHTML;
+.header {
+    background: var(--ink);
+    color: #fff;
+    padding: 22px 28px;
 }
 
-function showToast(message, isError = false) {
-    const old = document.querySelector(".toast");
-    if (old) old.remove();
-    const toast = document.createElement("div");
-    toast.className = "toast" + (isError ? " error" : "");
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2500);
+.header h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: 0.2px; }
+
+.content { padding: 24px 28px; }
+
+/* Stats */
+.stats-dashboard {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
 }
 
-function getFields() {
-    return {
-        id: document.getElementById("studentId").value.trim().toUpperCase(),
-        name: document.getElementById("studentName").value.trim(),
-        status: document.getElementById("status").value
-    };
+.stat-card {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px 16px;
 }
 
-function findStudent(id) {
-    return records.find(r => r.id === id);
+.stat-card h3 { font-size: 0.85rem; font-weight: 500; color: var(--muted); }
+.stat-card p { font-size: 2rem; font-weight: 700; margin-top: 2px; }
+
+/* Form */
+.form-section {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 14px;
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line);
 }
 
-function addStudent() {
-    const { id, name, status } = getFields();
-    if (!id || !name) {
-        showToast("Enter both a student ID and a name.", true);
-        return;
-    }
-    if (findStudent(id)) {
-        showToast(`ID ${id} already exists. Use Mark Attendance instead.`, true);
-        return;
-    }
-    records.push({ id, name, date: today(), status });
-    saveRecords();
-    clearFields();
-    renderTable();
-    showToast(`${name} added.`);
+.form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 4px;
 }
 
-function markAttendance() {
-    const { id, status } = getFields();
-    if (!id) {
-        showToast("Enter the student ID to mark.", true);
-        return;
-    }
-    const student = findStudent(id);
-    if (!student) {
-        showToast(`No student with ID ${id}. Add the student first.`, true);
-        return;
-    }
-    const date = today();
-    const existing = records.find(r => r.id === id && r.date === date);
-    if (existing) {
-        existing.status = status;
-    } else {
-        records.push({ id, name: student.name, date, status });
-    }
-    saveRecords();
-    clearFields();
-    renderTable();
-    showToast(`${student.name} marked ${status.toLowerCase()}.`);
+input[type="text"], select {
+    width: 100%;
+    padding: 9px 11px;
+    font: inherit;
+    color: var(--ink);
+    background: #fff;
+    border: 1px solid #b9bdb2;
+    border-radius: 6px;
 }
 
-function clearFields() {
-    document.getElementById("studentId").value = "";
-    document.getElementById("studentName").value = "";
-    document.getElementById("status").value = "Present";
+input:focus-visible, select:focus-visible, button:focus-visible {
+    outline: 3px solid #8fb8aa;
+    outline-offset: 1px;
 }
 
-function deleteRecord(index) {
-    const rec = records[index];
-    if (!rec) return;
-    if (!confirm(`Delete the ${rec.date} record for ${rec.name}?`)) return;
-    records.splice(index, 1);
-    saveRecords();
-    renderTable();
+.btn-group {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
-function updateStats() {
-    const date = today();
-    const uniqueIds = new Set(records.map(r => r.id));
-    const todays = records.filter(r => r.date === date);
-    document.getElementById("statTotal").textContent = uniqueIds.size;
-    document.getElementById("statPresent").textContent =
-        todays.filter(r => r.status === "Present").length;
-    document.getElementById("statAbsent").textContent =
-        todays.filter(r => r.status === "Absent").length;
+button {
+    font: inherit;
+    font-weight: 600;
+    padding: 9px 16px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
 }
 
-function renderTable() {
-    const query = document.getElementById("searchBox").value.trim().toLowerCase();
-    const body = document.getElementById("tableBody");
-    body.innerHTML = "";
+.btn-add { background: var(--accent); color: #fff; }
+.btn-add:hover { background: var(--accent-dark); }
+.btn-mark { background: var(--ink); color: #fff; }
+.btn-mark:hover { background: #10202e; }
+.btn-clear { background: #fff; color: var(--ink); border-color: #b9bdb2; }
+.btn-clear:hover { background: #eceee8; }
+.btn-export { background: #fff; color: var(--accent); border-color: var(--accent); white-space: nowrap; }
+.btn-export:hover { background: #e7f0ec; }
 
-    let shown = 0;
-    // Newest records first, but keep original index for deletion
-    for (let i = records.length - 1; i >= 0; i--) {
-        const r = records[i];
-        if (query && !r.name.toLowerCase().includes(query) &&
-            !r.id.toLowerCase().includes(query)) continue;
-        shown++;
-        const tr = document.createElement("tr");
-        const cls = r.status === "Present" ? "present" : "absent";
-        tr.innerHTML = `
-            <td>${escapeHtml(r.id)}</td>
-            <td>${escapeHtml(r.name)}</td>
-            <td>${escapeHtml(r.date)}</td>
-            <td><span class="badge ${cls}">${escapeHtml(r.status)}</span></td>
-            <td><button class="btn-delete" onclick="deleteRecord(${i})">Delete</button></td>
-        `;
-        body.appendChild(tr);
-    }
-
-    const empty = document.getElementById("emptyMessage");
-    empty.style.display = shown === 0 ? "block" : "none";
-    empty.textContent = records.length === 0
-        ? "No students yet. Add one above to get started."
-        : "No records found matching your query.";
-
-    updateStats();
+/* Table */
+.table-controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 14px;
 }
 
-function exportToCSV() {
-    if (records.length === 0) {
-        showToast("Nothing to export yet.", true);
-        return;
-    }
-    const cell = v => `"${String(v).replace(/"/g, '""')}"`;
-    const rows = [["Student ID", "Name", "Date", "Status"]]
-        .concat(records.map(r => [r.id, r.name, r.date, r.status]));
-    const csv = rows.map(row => row.map(cell).join(",")).join("\n");
+.search-box { flex: 1; }
 
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `attendance-${today()}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+table { width: 100%; border-collapse: collapse; }
+
+th, td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
 }
 
-renderTable();
+th { font-size: 0.85rem; color: var(--muted); font-weight: 600; }
+tbody tr:hover { background: #f8f9f6; }
+
+.badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+.badge.present { background: #dcfce7; color: #166534; }
+.badge.absent { background: #fee2e2; color: #991b1b; }
+
+.btn-delete {
+    padding: 4px 10px;
+    font-size: 0.85rem;
+    background: #fff;
+    color: var(--absent);
+    border-color: #f0b4b4;
+}
+.btn-delete:hover { background: #fee2e2; }
+
+.empty {
+    text-align: center;
+    color: var(--muted);
+    padding: 28px 0;
+}
+
+.footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    padding: 14px;
+    border-top: 1px solid var(--line);
+}
+
+.toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    z-index: 10;
+}
+.toast.error { background: var(--absent); }
+
+@media (max-width: 640px) {
+    .content { padding: 18px 14px; }
+    .form-section { grid-template-columns: 1fr; }
+    .stats-dashboard { gap: 8px; }
+    .stat-card { padding: 10px; }
+    .stat-card p { font-size: 1.5rem; }
+    th, td { padding: 8px 6px; font-size: 0.9rem; }
+    .table-controls { flex-direction: column; }
+}
