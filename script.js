@@ -1,111 +1,93 @@
-// Load data from localStorage
-let students = JSON.parse(localStorage.getItem("attendanceData")) || [];
+const STORAGE_KEY = "attendanceRecords";
+let records = loadRecords();
 
-function saveData() {
-    localStorage.setItem("attendanceData", JSON.stringify(students));
-    updateStats();
-}
-
-function updateStats() {
-    const total = students.length;
-    const present = students.filter(s => s.status === 'Present').length;
-    const absent = students.filter(s => s.status === 'Absent').length;
-
-    document.getElementById("statTotal").innerText = total;
-    document.getElementById("statPresent").innerText = present;
-    document.getElementById("statAbsent").innerText = absent;
-}
-
-function renderTable() {
-    const tbody = document.getElementById("tableBody");
-    const emptyMsg = document.getElementById("emptyMessage");
-    const searchQuery = document.getElementById("searchBox").value.toLowerCase().trim();
-    
-    tbody.innerHTML = "";
-
-    // Filter student list live according to matching characters
-    const filteredStudents = students.filter(student => 
-        student.id.toLowerCase().includes(searchQuery) || 
-        student.name.toLowerCase().includes(searchQuery)
-    );
-
-    if (filteredStudents.length === 0) {
-        emptyMsg.style.display = "block";
-        return;
+function loadRecords() {
+    try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    } catch (e) {
+        return [];
     }
-    
-    emptyMsg.style.display = "none";
-    
-    filteredStudents.forEach((student) => {
-        // Find original storage index relative to parent array for clean deletion
-        const originalIndex = students.findIndex(s => s.id === student.id);
-        
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${student.id}</td>
-            <td>${student.name}</td>
-            <td>${student.date || "-"}</td>
-            <td class="${student.status === 'Present' ? 'status-present' : student.status === 'Absent' ? 'status-absent' : ''}">
-                ${student.status || "-"}
-            </td>
-            <td>
-                <button class="btn-delete" onclick="deleteStudent(${originalIndex})">Delete</button>
-            </td>
-        `;
-        tbody.appendChild(row);
-    });
+}
+
+function saveRecords() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+}
+
+function today() {
+    // Local date as YYYY-MM-DD
+    const d = new Date();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${d.getFullYear()}-${m}-${day}`;
+}
+
+function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function showToast(message, isError = false) {
+    const old = document.querySelector(".toast");
+    if (old) old.remove();
+    const toast = document.createElement("div");
+    toast.className = "toast" + (isError ? " error" : "");
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2500);
+}
+
+function getFields() {
+    return {
+        id: document.getElementById("studentId").value.trim().toUpperCase(),
+        name: document.getElementById("studentName").value.trim(),
+        status: document.getElementById("status").value
+    };
+}
+
+function findStudent(id) {
+    return records.find(r => r.id === id);
 }
 
 function addStudent() {
-    const id = document.getElementById("studentId").value.trim();
-    const name = document.getElementById("studentName").value.trim();
-    
+    const { id, name, status } = getFields();
     if (!id || !name) {
-        alert("Student ID fi Name galchi!");
+        showToast("Enter both a student ID and a name.", true);
         return;
     }
-    
-    if (students.some(s => s.id === id)) {
-        alert("Student ID kun duraan jira!");
+    if (findStudent(id)) {
+        showToast(`ID ${id} already exists. Use Mark Attendance instead.`, true);
         return;
     }
-
-    students.push({ id: id, name: name, date: "", status: "" });
-    saveData();
-    renderTable();
+    records.push({ id, name, date: today(), status });
+    saveRecords();
     clearFields();
-    alert("Student milkaa'inaan dabalamte!");
+    renderTable();
+    showToast(`${name} added.`);
 }
 
 function markAttendance() {
-    const id = document.getElementById("studentId").value.trim();
-    const status = document.getElementById("status").value;
-
+    const { id, status } = getFields();
     if (!id) {
-        alert("Student ID galchi!");
-    }
-
-    const student = students.find(s => s.id === id);
-    if (!student) {
-        alert("Student ID hin argamne!");
+        showToast("Enter the student ID to mark.", true);
         return;
     }
-
-    const today = new Date().toISOString().split("T")[0];
-    student.date = today;
-    student.status = status;
-    
-    saveData();
-    renderTable();
-    alert(`Attendance ${status} ta'ee mark godhame!`);
-}
-
-function deleteStudent(index) {
-    if (confirm("Student kana delete gochuu barbaaddaa?")) {
-        students.splice(index, 1);
-        saveData();
-        renderTable();
+    const student = findStudent(id);
+    if (!student) {
+        showToast(`No student with ID ${id}. Add the student first.`, true);
+        return;
     }
+    const date = today();
+    const existing = records.find(r => r.id === id && r.date === date);
+    if (existing) {
+        existing.status = status;
+    } else {
+        records.push({ id, name: student.name, date, status });
+    }
+    saveRecords();
+    clearFields();
+    renderTable();
+    showToast(`${student.name} marked ${status.toLowerCase()}.`);
 }
 
 function clearFields() {
@@ -114,29 +96,76 @@ function clearFields() {
     document.getElementById("status").value = "Present";
 }
 
-function exportToCSV() {
-    if (students.length === 0) {
-        alert("Data base irratti hin argamne bareessuuf!");
-        return;
-    }
-
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Student ID,Name,Date,Status\n";
-
-    students.forEach(s => {
-        let row = `"${s.id}","${s.name}","${s.date || '-'}","${s.status || '-'}"`;
-        csvContent += row + "\n";
-    });
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "Attendance_Report.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+function deleteRecord(index) {
+    const rec = records[index];
+    if (!rec) return;
+    if (!confirm(`Delete the ${rec.date} record for ${rec.name}?`)) return;
+    records.splice(index, 1);
+    saveRecords();
+    renderTable();
 }
 
-// Run initial data metrics on window setup
-updateStats();
+function updateStats() {
+    const date = today();
+    const uniqueIds = new Set(records.map(r => r.id));
+    const todays = records.filter(r => r.date === date);
+    document.getElementById("statTotal").textContent = uniqueIds.size;
+    document.getElementById("statPresent").textContent =
+        todays.filter(r => r.status === "Present").length;
+    document.getElementById("statAbsent").textContent =
+        todays.filter(r => r.status === "Absent").length;
+}
+
+function renderTable() {
+    const query = document.getElementById("searchBox").value.trim().toLowerCase();
+    const body = document.getElementById("tableBody");
+    body.innerHTML = "";
+
+    let shown = 0;
+    // Newest records first, but keep original index for deletion
+    for (let i = records.length - 1; i >= 0; i--) {
+        const r = records[i];
+        if (query && !r.name.toLowerCase().includes(query) &&
+            !r.id.toLowerCase().includes(query)) continue;
+        shown++;
+        const tr = document.createElement("tr");
+        const cls = r.status === "Present" ? "present" : "absent";
+        tr.innerHTML = `
+            <td>${escapeHtml(r.id)}</td>
+            <td>${escapeHtml(r.name)}</td>
+            <td>${escapeHtml(r.date)}</td>
+            <td><span class="badge ${cls}">${escapeHtml(r.status)}</span></td>
+            <td><button class="btn-delete" onclick="deleteRecord(${i})">Delete</button></td>
+        `;
+        body.appendChild(tr);
+    }
+
+    const empty = document.getElementById("emptyMessage");
+    empty.style.display = shown === 0 ? "block" : "none";
+    empty.textContent = records.length === 0
+        ? "No students yet. Add one above to get started."
+        : "No records found matching your query.";
+
+    updateStats();
+}
+
+function exportToCSV() {
+    if (records.length === 0) {
+        showToast("Nothing to export yet.", true);
+        return;
+    }
+    const cell = v => `"${String(v).replace(/"/g, '""')}"`;
+    const rows = [["Student ID", "Name", "Date", "Status"]]
+        .concat(records.map(r => [r.id, r.name, r.date, r.status]));
+    const csv = rows.map(row => row.map(cell).join(",")).join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `attendance-${today()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
 renderTable();
